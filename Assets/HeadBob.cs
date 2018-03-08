@@ -42,7 +42,7 @@ public class HeadBob : MonoBehaviour {
 
 
 
-        ////////////////
+        //////////////// DEBUG
         if (Input.GetKeyDown(KeyCode.P))
         {
             StartBob();

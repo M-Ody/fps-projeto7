@@ -12,12 +12,16 @@ namespace PolarisCore
         private Rigidbody _rb;
         private InputHandler _ih;
         private PlayerRotation _pr;
+        private HeadBob _hb;
+
+        private bool _isMoving;
         
         void Start()
         {
             _rb = GetComponent<Rigidbody>();
             _ih = GetComponent<InputHandler>();
             _pr = GetComponentInChildren<PlayerRotation>();
+            _hb = GetComponentInChildren<HeadBob>();
 
             // TODO: Mover isso para outro lugar
             Cursor.lockState = CursorLockMode.Locked;
@@ -79,7 +83,23 @@ namespace PolarisCore
             var movement = Vector3.forward * vMov;
             movement += Vector3.right * hMov;
             movement = Vector3.Normalize(movement) * velocity * Time.deltaTime;
-            transform.Translate(movement);
+            if (movement.magnitude > 0f)
+            {
+                transform.Translate(movement);
+                if (!_isMoving)
+                {
+                    _isMoving = true;
+                    _hb.StartBob();
+                }
+            }
+            else
+            {
+                if (_isMoving)
+                {
+                    _isMoving = false;
+                    _hb.StopBob();
+                }
+            }
         }
 
         private void Jump()
