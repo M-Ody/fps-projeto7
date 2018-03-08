@@ -9,9 +9,11 @@ namespace PolarisCore
 
         private bool[] _inputBuffer = new bool[(int)EInputNames.TOTAL_INPUTS];
 
-        // Pode ser alterado para recever teclas dinâmicas, apenas é necessário
+        // Pode ser alterado para receber teclas dinâmicas, apenas é necessário
         // que outra classe altere os arrays de input desta classe, alterando os keycodes
         // de cada ação
+        // O único problema que permanece é o dos Axis, que provavelmente deve ser feito manualmente
+        // para todas possibilidades
 
         private KeyCode[] _forwardInput = new KeyCode[2];
         private KeyCode[] _backwardInput = new KeyCode[2];
@@ -41,6 +43,15 @@ namespace PolarisCore
         public bool[] GetInputStream()
         {
             return _inputBuffer;
+        }
+
+        public Vector2 GetAxisInput()
+        {
+            var axisInput = new Vector2();
+            // TODO: if (InputMode.KEYBOARD
+            axisInput.x = Input.GetAxis("Mouse X");
+            axisInput.y = Input.GetAxis("Mouse Y");
+            return axisInput;
         }
 
         private void SetUpForKeyboard()
