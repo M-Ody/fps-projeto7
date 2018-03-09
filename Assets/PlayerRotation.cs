@@ -3,10 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerRotation : MonoBehaviour {
+
+    private Vector3 currentLocal;
+
+    private void Start()
+    {
+        currentLocal = transform.localEulerAngles; ;
+    }
+
     public void RotateHead (float pitch)
     {
-        Vector3 curLocal = transform.localEulerAngles;
-        curLocal.x -= pitch;
-        transform.localEulerAngles = curLocal;
+        currentLocal.x = Mathf.Clamp(currentLocal.x -= pitch, -80f,80f);
+        transform.localEulerAngles = currentLocal;
     }
 }

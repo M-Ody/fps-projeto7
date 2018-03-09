@@ -7,15 +7,23 @@ namespace PolarisCore
 {
     public class PlayerMovement : MonoBehaviour
     {
+        private const float DISTANCE_TO_GROUND = 1f;
+
         public float velocity = 10f;
+        public float jumpForce = 150f;
 
         private Rigidbody _rb;
         private InputHandler _ih;
         private PlayerRotation _pr;
         private HeadBob _hb;
 
+        private float _velocityMod = 1f;
+
         private bool _isMoving;
-        
+        private bool _isGrounded;
+        private bool _isAnimatingJump;
+        private bool _isAiming;
+
         void Start()
         {
             _rb = GetComponent<Rigidbody>();
@@ -30,6 +38,7 @@ namespace PolarisCore
         void Update()
         {
             HandleMovimentation();
+            HandleAnimations();
         }
 
         private void HandleMovimentation()
@@ -49,10 +58,8 @@ namespace PolarisCore
             {
                 Jump();
             }
-            else
-            {
-                Move(hMov, vMov);
-            }
+
+            Move(hMov, vMov);
             Rotate(axis);
 
             if (buffer[(int)EInputNames.AIM]) Aim();
@@ -61,9 +68,7 @@ namespace PolarisCore
         
         private void Rotate(Vector2 axis)
         {
-            Vector3 curLocal = transform.localEulerAngles;
-            curLocal.y += axis.x;
-            transform.localEulerAngles = curLocal;
+            transform.Rotate(transform.up * axis.x);
 
             _pr.RotateHead(axis.y);
         }
@@ -75,21 +80,37 @@ namespace PolarisCore
 
         private void Aim()
         {
-            throw new NotImplementedException();
+            if (!_isGrounded) return;
+
+            if (_isAiming)
+            {
+                if(_isMoving)
+                {
+                    _hb.StartWalkingBob();
+                }
+                _isAiming = false;
+                _velocityMod = 1f;
+            }
+            else
+            {
+                _hb.StopBobImmediately();
+                _isAiming = true;
+                _velocityMod = 0.4f;
+            }
         }
 
         private void Move(int hMov, int vMov)
         {
             var movement = Vector3.forward * vMov;
             movement += Vector3.right * hMov;
-            movement = Vector3.Normalize(movement) * velocity * Time.deltaTime;
+            movement = Vector3.Normalize(movement) * velocity * Time.deltaTime * _velocityMod;
             if (movement.magnitude > 0f)
             {
                 transform.Translate(movement);
-                if (!_isMoving)
+                if (!_isMoving && !_isAiming)
                 {
                     _isMoving = true;
-                    _hb.StartBob();
+                    _hb.StartWalkingBob();
                 }
             }
             else
@@ -97,14 +118,41 @@ namespace PolarisCore
                 if (_isMoving)
                 {
                     _isMoving = false;
-                    _hb.StopBob();
+                    _hb.StopWalkingBob();
                 }
             }
         }
 
         private void Jump()
         {
-            throw new NotImplementedException();
+            if (_isGrounded)
+            {
+                Aim();
+                _hb.StopBobImmediately();
+                _rb.AddForce(Vector3.up * jumpForce);
+                _isGrounded = false;
+            }
+        }
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (collision.gameObject.tag == "Ground")
+            {
+                _isAnimatingJump = true;
+            }
+        }
+
+        private void HandleAnimations()
+        {
+            if (_isAnimatingJump)
+            {
+                _isGrounded = _hb.JumpAnimation();
+                _isAnimatingJump = !_isGrounded;
+                if (!_isAnimatingJump && _isMoving)
+                {
+                    _hb.StartWalkingBob();
+                }
+            }
         }
     }
 }

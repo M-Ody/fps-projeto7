@@ -6,6 +6,9 @@ namespace PolarisCore
 {
     public class InputHandler : MonoBehaviour
     {
+        [SerializeField]
+        [Range(1f, 10f)]
+        private float mouseSensibility = 8f;
 
         private bool[] _inputBuffer = new bool[(int)EInputNames.TOTAL_INPUTS];
 
@@ -49,8 +52,8 @@ namespace PolarisCore
         {
             var axisInput = new Vector2();
             // TODO: if (InputMode.KEYBOARD
-            axisInput.x = Input.GetAxis("Mouse X");
-            axisInput.y = Input.GetAxis("Mouse Y");
+            axisInput.x = Input.GetAxis("Mouse X") * mouseSensibility;
+            axisInput.y = Input.GetAxis("Mouse Y") * mouseSensibility;
             return axisInput;
         }
 
